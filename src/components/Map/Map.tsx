@@ -1,19 +1,24 @@
 import React from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, Image, Text, ImageURISource, Dimensions } from 'react-native';
 import MapView, { MarkerProps, Marker } from 'react-native-maps';
 
-const ImageSources = [
+const ImageSources: Array<ImageURISource> = [
   { uri: "https://i.imgur.com/sNam9iJ.jpg" },
   { uri: "https://i.imgur.com/N7rlQYt.jpg" },
   { uri: "https://i.imgur.com/UDrH0wm.jpg" },
   { uri: "https://i.imgur.com/Ka8kNST.jpg" }
 ];
 
+const { height, width } = Dimensions.get('window');
+const CARD_HEIGHT = height / 4;
+const CARD_WIDTH = CARD_HEIGHT - 50;
+
 interface MapState {
   markers: Array<MarkerProps>;
 }
 
 export default class Map extends React.Component<{}, MapState> {
+  private cardAnimation: {};
   constructor(props: {}) {
     super(props);
     this.state = {
@@ -56,6 +61,7 @@ export default class Map extends React.Component<{}, MapState> {
         },
       ]
     }
+    this.cardAnimation = new Animated.Value(0);
   }
   render() {
     return (
@@ -79,7 +85,58 @@ export default class Map extends React.Component<{}, MapState> {
             );
           })}
         </MapView>
-      </View>
+        <Animated.ScrollView
+          style={styles.cardContainer}
+          contentContainerStyle={styles.cardInnerContainer}
+          horizontal={true}
+          scrollEventThrottle={1}
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={CARD_WIDTH}
+          onScroll={Animated.event(
+            [
+              {
+                nativeEvent: {
+                  contentOffset: {
+                    x: this.cardAnimation,
+                  }
+                }
+              },
+            ],
+            { useNativeDriver: true }
+          )}
+        >
+          {this.state.markers.map((marker, index) => {
+            return (
+              <View
+                style={styles.card}
+                key={index}
+              >
+                {marker.image && (
+                  <Image
+                    source={marker.image}
+                    style={styles.cardImage}
+                    resizeMode="cover"
+                  />
+                )}
+                <View style={styles.cardTextContent}>
+                  <Text
+                    style={styles.cardTextTitle}
+                    numberOfLines={1}
+                  >
+                    {marker.title}
+                  </Text>
+                  <Text
+                    style={styles.cardTextDescription}
+                    numberOfLines={1}
+                  >
+                    {marker.description}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </Animated.ScrollView>
+      </View >
     )
   }
 }
@@ -92,4 +149,40 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
   },
+  cardContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 0,
+    right: 0,
+    paddingVertical: 16,
+  },
+  cardInnerContainer: {
+    // カードの一番右の余白
+    paddingRight: width - CARD_WIDTH,
+  },
+  card: {
+    padding: 8,
+    marginHorizontal: 10,
+    height: CARD_HEIGHT,
+    width: CARD_WIDTH,
+    backgroundColor: '#FFF',
+  },
+  cardImage: {
+    flex: 3,
+    width: '100%',
+    height: '100%',
+    alignSelf: 'center',
+  },
+  cardTextContent: {
+    flex: 1,
+    marginTop: 8,
+  },
+  cardTextTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  cardTextDescription: {
+    fontSize: 12,
+    color: '#444',
+  }
 })
