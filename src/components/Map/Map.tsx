@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import MapView, { MarkerProps } from 'react-native-maps';
+import { View, StyleSheet, Animated } from 'react-native';
+import MapView, { MarkerProps, Marker } from 'react-native-maps';
 
 const ImageSources = [
   { uri: "https://i.imgur.com/sNam9iJ.jpg" },
@@ -68,7 +68,17 @@ export default class Map extends React.Component<{}, MapState> {
             latitudeDelta: 0.04864195044303443,
             longitudeDelta: 0.040142817690068,
           }}
-        />
+        >
+          {this.state.markers.map((marker, index) => {
+            return (
+              <Marker
+                key={index}
+                coordinate={marker.coordinate}
+              >
+              </Marker>
+            );
+          })}
+        </MapView>
       </View>
     )
   }
